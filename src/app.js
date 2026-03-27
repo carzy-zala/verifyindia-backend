@@ -29,7 +29,9 @@ app.use(morgan('dev'));
 //     }),
 // );
 
-
+app.get('/api/v1/health', (req, res) => {
+    res.status(200).json({ message: 'OK' });
+});
 app.use('/api/v1', gstRoutes);
 app.use(errorHandler);
 
