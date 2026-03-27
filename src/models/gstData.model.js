@@ -4,7 +4,7 @@ const gstDataSchema = new mongoose.Schema({
     gstin: {
         type: String,
         required: true,
-        index: true
+        unique: true
     },
     data: {
         type: mongoose.Schema.Types.Mixed,

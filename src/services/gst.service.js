@@ -22,13 +22,13 @@ export const getCaptchaService = async () => {
     const parsedInitialCookies = parseCookies(initialCookies);
 
     const captchaRes = await axios.get(`${GST_BASE_URL}/services/captcha`, {
-        headers: { 
+        headers: {
             ...DEFAULT_HEADERS,
-            'Cookie': parsedInitialCookies.join('; ') 
+            'Cookie': parsedInitialCookies.join('; ')
         },
         responseType: 'arraybuffer'
     });
-    
+
     let allCookies = [...initialCookies];
     if (captchaRes.headers['set-cookie']) {
         allCookies = [...allCookies, ...captchaRes.headers['set-cookie']];
@@ -61,10 +61,11 @@ export const getGSTDetailsService = async (sessionId, GSTIN, captcha) => {
 
     // Only store actual successful taxpayer details, skipping Captcha errors or invalid GSTINs
     if (response.data && !response.data.errorCode && !response.data.error_cd && !response.data.error) {
-        await GstData.create({
-            gstin: GSTIN,
-            data: response.data
-        });
+        await GstData.updateOne(
+            { gstin: GSTIN },
+            { $set: { data: response.data, fetchedAt: new Date() } },
+            { upsert: true }
+        );
     }
 
     return response.data;
