@@ -21,13 +21,18 @@ app.use(cors({
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
-// app.use(mongoSanitize());
-// app.use(
-//     mongoSanitize({
-//         allowDots: true,
-//         replaceWith: '_',
-//     }),
-// );
+// Workaround for express-mongo-sanitize with Express 5
+app.use((req, res, next) => {
+    Object.defineProperty(req, 'query', {
+        value: { ...req.query },
+        writable: true,
+        configurable: true,
+        enumerable: true,
+    });
+    next();
+});
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
 
 app.get('/api/v1/health', (req, res) => {
     res.status(200).json({ message: 'OK' });
