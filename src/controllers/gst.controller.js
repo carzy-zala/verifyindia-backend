@@ -72,16 +72,21 @@ export const getGSTDetails = async (req, res, next) => {
             }
         });
 
-        // Only store actual successful taxpayer details, skipping Captcha errors or invalid GSTINs
-        if (response.data && !response.data.errorCode && !response.data.error_cd && !response.data.error) {
-            await GstData.updateOne(
-                { gstin: GSTIN },
-                { $set: { data: response.data, fetchedAt: new Date() } },
-                { upsert: true }
-            );
+        // Check for logical errors from the official GST API (even if status is 200)
+        if (response.data?.error || response.data?.errorCode) {
+            const errorMsg = response.data.error?.message || response.data.error_msg || response.data.errorDesc || 'Invalid GSTIN or Captcha';
+            return res.status(422).json({ error: errorMsg });
         }
 
+        // Only store successfull taxpayer details
+        await GstData.updateOne(
+            { gstin: GSTIN },
+            { $set: { data: response.data, fetchedAt: new Date() } },
+            { upsert: true }
+        );
+
         res.status(200).json(response.data);
+
     } catch (error) {
         console.error('Error fetching GST Details:', error.message);
         res.status(500).json({ error: 'Error in fetching GST Details' });

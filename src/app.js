@@ -4,7 +4,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import gstRoutes from './routes/gst.routes.js';
-import errorHandler from './middlewares/errorHandler.js';
 import mongoSanitize from 'express-mongo-sanitize';
 
 const app = express();
@@ -38,6 +37,6 @@ app.get('/api/v1/health', (req, res) => {
     res.status(200).json({ message: 'OK' });
 });
 app.use('/api/v1', gstRoutes);
-app.use(errorHandler);
+
 
 export default app;
